@@ -1,0 +1,26 @@
+40000093  #        addi x1, x0, 0x400 
+42000113  #        addi x2, x0, 0x420 
+00300193  #        addi x3, x0, 3     
+800004b7  #        lui  x9, 0x80000000
+0030a023  # init:  sw   x3, 0(x1)     
+0230a023  #        sw   x3, 0x20(x1)  
+003182b3  #        add  x5, x3, x3    
+003281b3  #        add  x3, x5, x3    
+01f1f193  #        andi x3, x3, 0x1f  
+00408093  #        addi x1, x1, 4     
+00208263  #        beq  x1, x2, oloop 
+fe0000e3  #        beq  x0, x0, init  
+40000093  # oloop: addi x1, x0, 0x400 
+ffc10113  #        addi x2, x2, -4    
+02208463  #        beq  x1, x2, break 
+0000a183  # iloop: lw   x3, 0(x1)     
+0040a203  #        lw   x4, 4(x1)     
+403202b3  #        sub  x5, x4, x3    
+0092f2b3  #        and  x5, x5, x9    
+00028463  #        beq  x5, x0, endif 
+0040a023  #        sw   x4, 0(x1)     
+0030a223  #        sw   x3, 4(x1)     
+00408093  # endif: addi x1, x1, 4     
+fc2088e3  #        beq  x1, x2, oloop 
+fc000ce3  #        beq  x0, x0, iloop 
+00000000  # break:
