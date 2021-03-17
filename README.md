@@ -18,6 +18,13 @@ Since 2019, I have been using this processor in my computer architecture
 class. Students can run some assembly programs through logic simulation.
 They can also try to implement another instruction on the processor.
 
+![Schematic](MiniFive_Schematic.png)
+
+The above image depicts the schematic of the data path and control of the
+processor. You can also find some schematics, including the above image,
+in the PowerPoint slide file
+<a href="https://github.com/nfproc/MINIFIVE/blob/main/MiniFive_Schematic.pptx">MiniFive_Schematic.pptx</a>.
+
 -----------------------------------------------------------------------
 
 How to Use
