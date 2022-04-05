@@ -1,6 +1,6 @@
 -- MINIFIVE: a simple (subset of) RISC-V processor
 --   minifive_test.vhdl - test bench of MINIFIVE
--- Copyright (C) 2019-2021 Naoki FUJIEDA. New BSD License is applied.
+-- Copyright (C) 2019-2022 Naoki FUJIEDA. New BSD License is applied.
 ------------------------------------------------------------------------
 
 library IEEE;
@@ -65,8 +65,8 @@ architecture SIM of MINIFIVE_TEST is
   signal HALT          : std_logic;
   signal inst_count    : std_logic_vector(31 downto 0);
 
-  file PROC_LOG : text open write_mode is "proc_log.txt";
-  file DMEM_DMP : text open write_mode is "dmem_dmp.txt";
+  file PROC_LOG : text open write_mode is "_proc_log.txt";
+  file DMEM_DMP : text open write_mode is "_dmem_dmp.txt";
 
 begin
   PROC: MINIFIVE port map
