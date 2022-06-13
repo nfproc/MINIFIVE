@@ -18,7 +18,7 @@ architecture SIM of PROGRAM_ROM is
   type MEM_TYPE is array(0 to 255) of std_logic_vector(31 downto 0);
   signal initialized : boolean := false;
   signal MEM : MEM_TYPE;
-  file   init_file : text open read_mode is "../program/squaresum_program.txt";
+  file   init_file : text open read_mode is "../program/fibonacci_program.txt";
 
 begin
   process (CLK) 
