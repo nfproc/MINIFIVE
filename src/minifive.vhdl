@@ -202,7 +202,7 @@ begin
         PC      <= x"00000000";
         IFID_PC <= x"00000000";
       elsif STATE = STATE_IF then
-        IFID_PC <= IF_PC_PLUS4;
+        IFID_PC <= PC;
       elsif STATE = STATE_WB then
         PC      <= IF_NEXT_PC;
       end if;

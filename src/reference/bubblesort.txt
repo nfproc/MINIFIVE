@@ -2,15 +2,15 @@
 800004b7  #        lui  x9, 0x80000000
 40000093  # oloop: addi x1, x0, 0x400 
 ffc10113  #        addi x2, x2, -4    
-02208463  #        beq  x1, x2, break 
+02208663  #        beq  x1, x2, break 
 0000a183  # iloop: lw   x3, 0(x1)     
 0040a203  #        lw   x4, 4(x1)     
 403202b3  #        sub  x5, x4, x3    
 0092f2b3  #        and  x5, x5, x9    
-00028463  #        beq  x5, x0, endif 
+00028663  #        beq  x5, x0, endif 
 0040a023  #        sw   x4, 0(x1)     
 0030a223  #        sw   x3, 4(x1)     
 00408093  # endif: addi x1, x1, 4     
-fc2088e3  #        beq  x1, x2, oloop 
-fc000ce3  #        beq  x0, x0, iloop 
+fc208ae3  #        beq  x1, x2, oloop 
+fc000ee3  #        beq  x0, x0, iloop 
 00000000  # break:
