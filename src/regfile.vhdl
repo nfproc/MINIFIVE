@@ -1,5 +1,6 @@
 -- MINIFIVE: a simple (subset of) RISC-V processor
 --   regfile.vhdl - register file
+-- Copyright (C) 2019-2023 Naoki FUJIEDA. New BSD License is applied.
 ------------------------------------------------------------------------
 
 library IEEE;

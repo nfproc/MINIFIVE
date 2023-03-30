@@ -8,11 +8,27 @@ This repository contains HDL source codes (written in VHDL) of a simple
 multi-cycle processor that executes a subset of the RV32I instruction set,
 developed for an educational purpose.
 
-The processor only supports nine instructions of RV32I: `add`, `sub`,
-`addi`, `and`, `andi`, `lw`, `sw`, `lui`, and `beq`. The design is deeply
-inspired from a famous textbook, "Digital Design and Computer Architecture"
-by Harris and Harris, yet it always executes one instruction in a fixed
-number of (five) cycles for simplification of state transition.
+The design is deeply inspired from a famous textbook, "Digital Design and
+Computer Architecture" by Harris and Harris, yet it always executes one
+instruction in a fixed number of (five) cycles for simplification of state
+transition.
+
+Currently, the processor supports 21 (out of 47) instructions of RV32I.
+The other instructions do not work correctly because of either of the
+following reasons:
+
+1. Some operations of the ALU (arithmetic logic unit) are intentionally
+   omitted from implementation. Such instructions will give wrong results,
+   though they will be correctly decoded.
+2. Data memory always performs a read or write to a 4-byte word: a byte or
+   half-word access is not supported.
+3. Instructions mainly used for integration with an operating system are
+   not supported. The processor will stop as their opcode is treated as
+   "unknown" one.
+  
+The following table summarizes how the processor treats RV32I instructions.
+
+![List of Supported Instructions](MiniFive_InstructionSupport.png)
 
 Since 2019, I have been using this processor in my computer architecture
 class. Students can run some assembly programs through logic simulation.
@@ -42,7 +58,7 @@ So, analyze these files and run the simulation with the test bench as the
 top module. They can be done by executing GHDL twice on the `testbench`
 directory, with the following arguments:
 
->     GHDL -a -fexplicit -fsynopsys ..\alu.vhdl ..\decoder.vhdl ..\regfile.vhdl ..\signextend.vhdl ..\minifive.vhdl program.vhdl datamemory.vhdl minifive_test.vhdl
+>     GHDL -a -fexplicit -fsynopsys ..\alu.vhdl ..\branch.vhdl ..\decoder.vhdl ..\immextend.vhdl ..\regfile.vhdl ..\minifive.vhdl program.vhdl datamemory.vhdl minifive_test.vhdl
 >     GHDL -r -fexplicit -fsynopsys MINIFIVE_TEST --ieee-asserts=disable --stop-time=1ms
 
 By default, the test bench has been set up to execute the `fibonacci`
@@ -68,12 +84,13 @@ words are not dumped.
 Sample Programs
 ---------------
 
-The repository includes four test programs in the `program` directory.
+The repository includes five test programs in the `program` directory.
 Brief explanations of them are as follows:
 
 - `fibonacci`: calculates the 0th-19th terms of Fibonacci sequence,
 - `collatz`: calculates the first (up to) 32 terms of Collatz sequence,
-- `bubblesort` conducts bubble sort of an array with 8 elements, and
+- `bubblesort` conducts bubble sort of an array with 32 elements,
+- `quicksort` conducts quick sort of an array with 32 elements, and
 - `squaresum` calculates the sum of square of elements in a vector.
 
 Each program consists of two text files, `(program name)_program.txt`
@@ -108,4 +125,4 @@ MINIFIVE is developed by <a href="https://aitech.ac.jp/~dslab/nf/index.en.html">
 It is licensed under the New BSD license.
 See the COPYING file for more information.
 
-Copyright (C) 2019-2022 Naoki FUJIEDA. All rights reserved.
+Copyright (C) 2019-2023 Naoki FUJIEDA. All rights reserved.

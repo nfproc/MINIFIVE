@@ -1,16 +1,19 @@
-42000113  #        addi x2, x0, 0x420 
-800004b7  #        lui  x9, 0x80000000
-40000093  # oloop: addi x1, x0, 0x400 
-ffc10113  #        addi x2, x2, -4    
-02208663  #        beq  x1, x2, break 
-0000a183  # iloop: lw   x3, 0(x1)     
-0040a203  #        lw   x4, 4(x1)     
-403202b3  #        sub  x5, x4, x3    
-0092f2b3  #        and  x5, x5, x9    
-00028663  #        beq  x5, x0, endif 
-0040a023  #        sw   x4, 0(x1)     
-0030a223  #        sw   x3, 4(x1)     
-00408093  # endif: addi x1, x1, 4     
-fc208ae3  #        beq  x1, x2, oloop 
-fc000ee3  #        beq  x0, x0, iloop 
-00000000  # break:
+          # # main and initialization functions are omitted.
+          # # bubblesort function starts at 0x58.
+00060313  #        addi x6, x12, 0     
+02b30c63  # oloop: beq  x6, x11, oend  
+00058293  #        addi x5, x11, 0     
+02628463  # iloop: beq  x5, x6, iend   
+00229393  #        slli x7, x5, 2      
+007503b3  #        add  x7, x10, x7    
+0003ae03  #        lw   x28, 0(x7)     
+0043ae83  #        lw   x29, 4(x7)     
+01de6663  #        bltu x28, x29, endif
+01d3a023  #        sw   x29, 0(x7)     
+01c3a223  #        sw   x28, 4(x7)     
+          # endif:                     
+00128293  #        addi x5, x5, 1      
+fc000ee3  #        beq  x0, x0, iloop  
+fff30313  # iend:  addi x6, x6, -1     
+fc0006e3  #        beq  x0, x0, oloop  
+000080e7  # oend:  jalr x1             

@@ -1,0 +1,65 @@
+          # # main and initialization functions are omitted.
+          # # partition function starts at 0x58.
+00259293  # part:   slli x5, x11, 2      
+005502b3  #         add  x5, x10, x5     
+0002a283  #         lw   x5, 0(x5)       
+00058313  #         addi x6, x11, 0      
+00060393  #         addi x7, x12, 0      
+00239e13  # oloop:  slli x28, x7, 2      
+01c50e33  #         add  x28, x10, x28   
+04730863  # iloop1: beq  x6, x7, oend    
+000e2e83  #         lw   x29, 0(x28)     
+005ee863  #         bltu x29, x5, iend1  
+fff38393  #         addi x7, x7, -1      
+ffce0e13  #         addi x28, x28, -4    
+fe0006e3  #         beq  x0, x0, iloop1  
+00231e13  # iend1:  slli x28, x6, 2      
+01c50e33  #         add  x28, x10, x28   
+01de2023  #         sw   x29, 0(x28)     
+00130313  # iloop2: addi x6, x6, 1       
+004e0e13  #         addi x28, x28, 4     
+02730263  #         beq  x6, x7, oend    
+000e2e83  #         lw   x29, 0(x28)     
+fe5ee8e3  #         bltu x29, x5, iloop2 
+00239e13  # iend2:  slli x28, x7, 2      
+01c50e33  #         add  x28, x10, x28   
+01de2023  #         sw   x29, 0(x28)     
+fff38393  #         addi x7, x7, -1      
+ffce0e13  #         addi x28, x28, -4    
+fa000ae3  #         beq  x0, x0, iloop1  
+00231e13  # oend:   slli x28, x6, 2      
+01c50e33  #         add  x28, x10, x28   
+005e2023  #         sw   x5, 0, x28      
+00030513  #         addi x10, x6, 0      
+000080e7  #         jalr x1              
+          #
+fec10113  # qsort:  addi x2, x2, -20     
+00112023  #         sw   x1, 0(x2)       
+00812223  #         sw   x8, 4(x2)       
+00912423  #         sw   x9, 8(x2)       
+01212623  #         sw   x18, 12(x2)     
+01312823  #         sw   x19, 16(x2)     
+00050413  #         addi x8, x10, 0      
+00058493  #         addi x9, x11, 0      
+00060913  #         addi x18, x12, 0     
+f5dff0ef  #         jal  partition       
+00050993  #         addi x19, x10, 0     
+00998c63  #         beq  x19, x9, endif1 
+fff98613  #         addi x12, x19, -1    
+00960863  #         beq  x12, x9, endif1 
+00040513  #         addi x10, x8, 0      
+00048593  #         addi x11, x9, 0      
+fc1ff0ef  #         jal  quicksort       
+01298c63  # endif1: beq  x19, x18, endif2
+00198593  #         addi x11, x19, 1     
+01258863  #         beq  x11, x18, endif2
+00040513  #         addi x10, x8, 0      
+00090613  #         addi x12, x18, 0     
+fa9ff0ef  #         jal  quicksort       
+01012983  # endif2: lw   x19, 16(x2)     
+00c12903  #         lw   x18, 12(x2)     
+00812483  #         lw   x9, 8(x2)       
+00412403  #         lw   x8, 4(x2)       
+00012083  #         lw   x1, 0(x2)       
+01410113  #         addi x2, x2, 20      
+000080e7  #         jalr x1              
