@@ -41,7 +41,7 @@ begin
       IMM(31 downto 12) <= INST(31 downto 12);
       IMM(11 downto  0) <= x"000";
     elsif FORMAT = "101" then -- J-type
-      IMM(31 downto 21) <= SIGN_EXT(31 downto 21);
+      IMM(31 downto 20) <= SIGN_EXT(31 downto 20);
       IMM(19 downto 12) <= INST(19 downto 12);
       IMM(11)           <= INST(20);
       IMM(10 downto  1) <= INST(30 downto 21);
