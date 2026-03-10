@@ -1,164 +1,164 @@
 -- MINIFIVE: a simple (subset of) RISC-V processor
 --   minifive.vhdl - top module of processor
--- Copyright (C) 2019-2023 Naoki FUJIEDA. New BSD License is applied.
+-- Copyright (C) 2019-2026 Naoki FUJIEDA. New BSD License is applied.
 ------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.std_logic_1164.all;
-use IEEE.std_logic_unsigned.all;
+use IEEE.numeric_std_unsigned.all;
 
 entity MINIFIVE is
-  port (CLK, RST : in  std_logic;
-        IMEM_A   : out std_logic_vector(31 downto 0);
-        IMEM_Q   : in  std_logic_vector(31 downto 0);
-        DMEM_A   : out std_logic_vector(31 downto 0);
-        DMEM_D   : out std_logic_vector(31 downto 0);
-        DMEM_WE  : out std_logic;
-        DMEM_Q   : in  std_logic_vector(31 downto 0);
-        DEBUG_A3 : out std_logic_vector( 4 downto 0);
-        DEBUG_D3 : out std_logic_vector(31 downto 0);
-        DEBUG_EN : out std_logic;
-        HALT     : out std_logic);
+  port (CLK, RST : in  std_ulogic;
+        IMEM_A   : out std_ulogic_vector(31 downto 0);
+        IMEM_Q   : in  std_ulogic_vector(31 downto 0);
+        DMEM_A   : out std_ulogic_vector(31 downto 0);
+        DMEM_D   : out std_ulogic_vector(31 downto 0);
+        DMEM_WE  : out std_ulogic;
+        DMEM_Q   : in  std_ulogic_vector(31 downto 0);
+        HALT     : out std_ulogic);
 end MINIFIVE;
 
 architecture RTL of MINIFIVE is
   -- DECODER -> decoder.vhdl
   component DECODER is
-    port (INST     : in  std_logic_vector(31 downto 0);
-          FORMAT   : out std_logic_vector( 2 downto 0);
-          BR_COND  : out std_logic_vector( 1 downto 0);
-          REG_WE3  : out std_logic;
-          A_SRC    : out std_logic;
-          B_SRC    : out std_logic;
-          ALU_OP   : out std_logic_vector( 4 downto 0);
-          DMEM_WE  : out std_logic;
-          D3_SRC   : out std_logic_vector( 1 downto 0);
-          UNDEF    : out std_logic);
+    port (INST     : in  std_ulogic_vector(31 downto 0);
+          FORMAT   : out std_ulogic_vector( 2 downto 0);
+          BR_COND  : out std_ulogic_vector( 1 downto 0);
+          REG_WE3  : out std_ulogic;
+          A_SRC    : out std_ulogic;
+          B_SRC    : out std_ulogic;
+          ALU_OP   : out std_ulogic_vector( 4 downto 0);
+          DMEM_WE  : out std_ulogic;
+          D3_SRC   : out std_ulogic_vector( 1 downto 0);
+          UNDEF    : out std_ulogic);
   end component;
 
   -- REGFILE -> regfile.vhdl
   component REGFILE is
-    port (CLK        : in  std_logic;
-          A1, A2, A3 : in  std_logic_vector( 4 downto 0);
-          D3         : in  std_logic_vector(31 downto 0);
-          WE3        : in  std_logic; -- write enable
-          Q1, Q2     : out std_logic_vector(31 downto 0));
+    port (CLK        : in  std_ulogic;
+          A1, A2, A3 : in  std_ulogic_vector( 4 downto 0);
+          D3         : in  std_ulogic_vector(31 downto 0);
+          WE3        : in  std_ulogic; -- write enable
+          Q1, Q2     : out std_ulogic_vector(31 downto 0));
   end component;
 
   -- IMM_EXTEND -> immextend.vhdl
   component IMM_EXTEND is
-    port (INST     : in  std_logic_vector(31 downto 0);
-          FORMAT   : in  std_logic_vector( 2 downto 0);
-          IMM      : out std_logic_vector(31 downto 0));
+    port (INST     : in  std_ulogic_vector(31 downto 0);
+          FORMAT   : in  std_ulogic_vector( 2 downto 0);
+          IMM      : out std_ulogic_vector(31 downto 0));
   end component;
 
   -- ALU -> alu.vhdl
   component ALU is
-    port (A, B   : in  std_logic_vector(31 downto 0);
-          ALU_OP : in  std_logic_vector( 4 downto 0);
-          Y      : out std_logic_vector(31 downto 0);
-          Y_ZERO : out std_logic);
+    port (A, B   : in  std_ulogic_vector(31 downto 0);
+          ALU_OP : in  std_ulogic_vector( 4 downto 0);
+          Y      : out std_ulogic_vector(31 downto 0);
+          Y_ZERO : out std_ulogic);
   end component;
 
   -- BRANCH -> branch.vhdl
   component BRANCH is
-    port (BR_COND  : in  std_logic_vector( 1 downto 0);
-          ALU_ZERO : in  std_logic;
-          PC_SRC   : out std_logic_vector( 1 downto 0));
+    port (BR_COND  : in  std_ulogic_vector( 1 downto 0);
+          ALU_ZERO : in  std_ulogic;
+          PC_SRC   : out std_ulogic_vector( 1 downto 0));
   end component;
 
   ---- internal signals
   -- state machine
-  type STATE_TYPE is (STATE_IF, STATE_ID, STATE_EX,
-                      STATE_MA, STATE_WB, STATE_HALT);
-  signal STATE, NEXT_STATE : STATE_TYPE;
+  type STATE_TYPE is (STATE_IF, STATE_ID, STATE_EX, STATE_MA, STATE_WB, STATE_HALT);
+  signal STATE, NEXT_STATE   : STATE_TYPE;
 
   -- IF Stage (instruction fetch)
-  signal IF_PC          : std_logic_vector(31 downto 0);
-  signal IF_PC_PLUS4    : std_logic_vector(31 downto 0);
-  signal IF_NEXT_PC     : std_logic_vector(31 downto 0);
+  signal IF_PC               : std_ulogic_vector(31 downto 0);
+  signal IF_PC_PLUS4         : std_ulogic_vector(31 downto 0);
+  signal IF_NEXT_PC          : std_ulogic_vector(31 downto 0);
   --port IMEM_A
 
   -- IF <-> ID
-  signal IFID_PC        : std_logic_vector(31 downto 0);
-  signal IFID_PC_PLUS4  : std_logic_vector(31 downto 0);
+  signal IFID_PC             : std_ulogic_vector(31 downto 0);
+  signal IFID_PC_PLUS4       : std_ulogic_vector(31 downto 0);
 
   -- ID Stage (instruction decode)
-  signal ID_INST        : std_logic_vector(31 downto 0);
-  signal ID_A1, ID_A2, ID_A3 : std_logic_vector( 4 downto 0);
-  signal ID_D3          : std_logic_vector(31 downto 0);
-  signal ID_WE3         : std_logic;
-  signal ID_RD          : std_logic_vector( 4 downto 0);
-  signal ID_IMM         : std_logic_vector(31 downto 0);
+  signal ID_INST             : std_ulogic_vector(31 downto 0);
+  signal ID_A1, ID_A2, ID_A3 : std_ulogic_vector( 4 downto 0);
+  signal ID_D3               : std_ulogic_vector(31 downto 0);
+  signal ID_WE3              : std_ulogic;
+  signal ID_RD               : std_ulogic_vector( 4 downto 0);
+  signal ID_IMM              : std_ulogic_vector(31 downto 0);
 
-  signal ID_FORMAT      : std_logic_vector( 2 downto 0);
-  signal ID_BR_COND     : std_logic_vector( 1 downto 0);
-  signal ID_REG_WE3     : std_logic;
-  signal ID_A_SRC       : std_logic;
-  signal ID_B_SRC       : std_logic;
-  signal ID_ALU_OP      : std_logic_vector( 4 downto 0);
-  signal ID_DMEM_WE     : std_logic;
-  signal ID_D3_SRC      : std_logic_vector( 1 downto 0);
-  signal ID_UNDEF       : std_logic;
+  signal ID_FORMAT           : std_ulogic_vector( 2 downto 0);
+  signal ID_BR_COND          : std_ulogic_vector( 1 downto 0);
+  signal ID_REG_WE3          : std_ulogic;
+  signal ID_A_SRC, ID_B_SRC  : std_ulogic;
+  signal ID_ALU_OP           : std_ulogic_vector( 4 downto 0);
+  signal ID_DMEM_WE          : std_ulogic;
+  signal ID_D3_SRC           : std_ulogic_vector( 1 downto 0);
+  signal ID_UNDEF            : std_ulogic;
 
   -- ID <-> EX
-  signal IDEX_RS1, IDEX_RS2 : std_logic_vector(31 downto 0);
-  signal IDEX_RD        : std_logic_vector( 4 downto 0);
-  signal IDEX_IMM       : std_logic_vector(31 downto 0);
-  signal IDEX_PC        : std_logic_vector(31 downto 0);
-  signal IDEX_PC_PLUS4  : std_logic_vector(31 downto 0);
+  signal IDEX_RS1, IDEX_RS2  : std_ulogic_vector(31 downto 0);
+  signal IDEX_RD             : std_ulogic_vector( 4 downto 0);
+  signal IDEX_IMM            : std_ulogic_vector(31 downto 0);
+  signal IDEX_PC             : std_ulogic_vector(31 downto 0);
+  signal IDEX_PC_PLUS4       : std_ulogic_vector(31 downto 0);
 
-  signal IDEX_BR_COND   : std_logic_vector( 1 downto 0);
-  signal IDEX_REG_WE3   : std_logic;
-  signal IDEX_A_SRC     : std_logic;
-  signal IDEX_B_SRC     : std_logic;
-  signal IDEX_ALU_OP    : std_logic_vector( 4 downto 0);
-  signal IDEX_DMEM_WE   : std_logic;
-  signal IDEX_D3_SRC    : std_logic_vector( 1 downto 0);
-  signal IDEX_UNDEF     : std_logic;
+  signal IDEX_BR_COND        : std_ulogic_vector( 1 downto 0);
+  signal IDEX_REG_WE3        : std_ulogic;
+  signal IDEX_A_SRC          : std_ulogic;
+  signal IDEX_B_SRC          : std_ulogic;
+  signal IDEX_ALU_OP         : std_ulogic_vector( 4 downto 0);
+  signal IDEX_DMEM_WE        : std_ulogic;
+  signal IDEX_D3_SRC         : std_ulogic_vector( 1 downto 0);
+  signal IDEX_UNDEF          : std_ulogic;
 
   -- EX Stage (execute)
-  signal EX_ALU_A, EX_ALU_B : std_logic_vector(31 downto 0);
-  signal EX_ALU_Y       : std_logic_vector(31 downto 0);
-  signal EX_ALU_ZERO    : std_logic;
-  signal EX_BRANCH_PC   : std_logic_vector(31 downto 0);
-  signal EX_PC_SRC      : std_logic_vector( 1 downto 0);
+  signal EX_ALU_A, EX_ALU_B  : std_ulogic_vector(31 downto 0);
+  signal EX_ALU_Y            : std_ulogic_vector(31 downto 0);
+  signal EX_ALU_ZERO         : std_ulogic;
+  signal EX_BRANCH_PC        : std_ulogic_vector(31 downto 0);
+  signal EX_PC_SRC           : std_ulogic_vector( 1 downto 0);
 
   -- EX <-> MA
-  signal EXMA_ALU_Y     : std_logic_vector(31 downto 0);
-  signal EXMA_RS2       : std_logic_vector(31 downto 0);
-  signal EXMA_RD        : std_logic_vector( 4 downto 0);
-  signal EXMA_BRANCH_PC : std_logic_vector(31 downto 0);
-  signal EXMA_PC_PLUS4  : std_logic_vector(31 downto 0);
+  signal EXMA_ALU_Y          : std_ulogic_vector(31 downto 0);
+  signal EXMA_RS2            : std_ulogic_vector(31 downto 0);
+  signal EXMA_RD             : std_ulogic_vector( 4 downto 0);
+  signal EXMA_BRANCH_PC      : std_ulogic_vector(31 downto 0);
+  signal EXMA_PC_PLUS4       : std_ulogic_vector(31 downto 0);
 
-  signal EXMA_PC_SRC    : std_logic_vector( 1 downto 0);
-  signal EXMA_REG_WE3   : std_logic;
-  signal EXMA_DMEM_WE   : std_logic;
-  signal EXMA_D3_SRC    : std_logic_vector( 1 downto 0);
-  signal EXMA_UNDEF     : std_logic;
+  signal EXMA_PC_SRC         : std_ulogic_vector( 1 downto 0);
+  signal EXMA_REG_WE3        : std_ulogic;
+  signal EXMA_DMEM_WE        : std_ulogic;
+  signal EXMA_D3_SRC         : std_ulogic_vector( 1 downto 0);
+  signal EXMA_UNDEF          : std_ulogic;
 
   -- MA Stage (memory access)
   -- * no internal signals (data memory-related signals are given as ports)
 
   -- MA <-> WB
-  signal MAWB_ALU_Y     : std_logic_vector(31 downto 0);
-  signal MAWB_RD        : std_logic_vector( 4 downto 0);
-  signal MAWB_BRANCH_PC : std_logic_vector(31 downto 0);
-  signal MAWB_PC_PLUS4  : std_logic_vector(31 downto 0);
+  signal MAWB_ALU_Y          : std_ulogic_vector(31 downto 0);
+  signal MAWB_RD             : std_ulogic_vector( 4 downto 0);
+  signal MAWB_BRANCH_PC      : std_ulogic_vector(31 downto 0);
+  signal MAWB_PC_PLUS4       : std_ulogic_vector(31 downto 0);
 
-  signal MAWB_PC_SRC    : std_logic_vector( 1 downto 0);
-  signal MAWB_REG_WE3   : std_logic;
-  signal MAWB_D3_SRC    : std_logic_vector( 1 downto 0);
-  signal MAWB_UNDEF     : std_logic;
+  signal MAWB_PC_SRC         : std_ulogic_vector( 1 downto 0);
+  signal MAWB_REG_WE3        : std_ulogic;
+  signal MAWB_D3_SRC         : std_ulogic_vector( 1 downto 0);
+  signal MAWB_UNDEF          : std_ulogic;
 
   -- WB Stage (write back)
-  signal WB_RESULT      : std_logic_vector(31 downto 0);
+  signal WB_RESULT           : std_ulogic_vector(31 downto 0);
+
+  -- for outputting instruction trace at testbench
+  signal DEBUG_A3            : std_ulogic_vector( 4 downto 0);
+  signal DEBUG_D3            : std_ulogic_vector(31 downto 0);
+  signal DEBUG_EN            : std_ulogic;
 
 begin
   -- state machine (state transition)
-  HALT  <= '1' when STATE = STATE_HALT else '0';
+  HALT <= '1' when STATE = STATE_HALT else '0';
 
-  process (STATE, MAWB_UNDEF) begin
+  process (all) begin
     if    STATE = STATE_IF then
       NEXT_STATE <= STATE_ID;
     elsif STATE = STATE_ID then
@@ -168,11 +168,8 @@ begin
     elsif STATE = STATE_MA then
       NEXT_STATE <= STATE_WB;
     elsif STATE = STATE_WB then
-      if MAWB_UNDEF = '1' then
-        NEXT_STATE <= STATE_HALT; -- stop if unknown inst. has come
-      else
-        NEXT_STATE <= STATE_IF;   -- otherwise, proceed to next inst.
-      end if;
+      -- stop if unknown instruction has come, proceed to the next otherwise
+      NEXT_STATE <= STATE_HALT when MAWB_UNDEF else STATE_IF;
     else
       NEXT_STATE <= STATE_HALT;
     end if;
@@ -180,7 +177,7 @@ begin
 
   process (CLK) begin
     if rising_edge(CLK) then
-      if RST = '1' then
+      if RST then
         STATE <= STATE_IF;
       else
         STATE <= NEXT_STATE;
@@ -198,7 +195,7 @@ begin
   -- IF <-> ID
   process (CLK) begin
     if rising_edge(CLK) then
-      if RST = '1' then
+      if RST then
         IF_PC         <= x"00000000";
         IFID_PC       <= x"00000000";
         IFID_PC_PLUS4 <= x"00000000";
@@ -220,18 +217,18 @@ begin
   EXT: IMM_EXTEND port map
     (ID_INST, ID_FORMAT, ID_IMM);
   
-  ID_INST  <= IMEM_Q;
-  ID_A1    <= ID_INST(19 downto 15);
-  ID_A2    <= ID_INST(24 downto 20);
-  ID_A3    <= MAWB_RD;
-  ID_D3    <= WB_RESULT;
-  ID_WE3   <= MAWB_REG_WE3 when STATE = STATE_WB else '0';
-  ID_RD    <= ID_INST(11 downto  7);
+  ID_INST <= IMEM_Q;
+  ID_A1   <= ID_INST(19 downto 15);
+  ID_A2   <= ID_INST(24 downto 20);
+  ID_A3   <= MAWB_RD;
+  ID_D3   <= WB_RESULT;
+  ID_WE3  <= MAWB_REG_WE3 when STATE = STATE_WB else '0';
+  ID_RD   <= ID_INST(11 downto  7);
   
   -- ID <-> EX
   process (CLK) begin
     if rising_edge(CLK) then
-      if RST = '1' then
+      if RST then
         IDEX_RD       <= "00000";
         IDEX_IMM      <= x"00000000";
         IDEX_PC       <= x"00000000";
@@ -267,14 +264,14 @@ begin
   BR: BRANCH port map
     (IDEX_BR_COND, EX_ALU_ZERO, EX_PC_SRC);
   
-  EX_ALU_A     <= IDEX_RS1   when IDEX_A_SRC = '0' else IDEX_PC;
-  EX_ALU_B     <= IDEX_RS2   when IDEX_B_SRC = '0' else IDEX_IMM;
+  EX_ALU_A     <= IDEX_RS1 when IDEX_A_SRC = '0' else IDEX_PC;
+  EX_ALU_B     <= IDEX_RS2 when IDEX_B_SRC = '0' else IDEX_IMM;
   EX_BRANCH_PC <= IDEX_PC + IDEX_IMM;
 
   -- EX <-> MA
   process (CLK) begin
     if rising_edge(CLK) then
-      if RST = '1' then
+      if RST then
         EXMA_ALU_Y     <= x"00000000";
         EXMA_RS2       <= x"00000000";
         EXMA_RD        <= "00000";
@@ -308,7 +305,7 @@ begin
   -- MA <-> WB
   process (CLK) begin
     if rising_edge(CLK) then
-      if RST = '1' then
+      if RST then
         MAWB_ALU_Y     <= x"00000000";
         MAWB_RD        <= "00000";
         MAWB_BRANCH_PC <= x"00000000";
@@ -335,8 +332,8 @@ begin
                DMEM_Q        when MAWB_D3_SRC = "01" else
                MAWB_PC_PLUS4;
 
-  -- debug signals (used by test bench)
-  DEBUG_A3 <= ID_A3 when ID_WE3 = '1' else "00000";
+  -- debug signals (for instruction trace)
+  DEBUG_A3 <= ID_A3 and ID_WE3;
   DEBUG_D3 <= ID_D3;
   DEBUG_EN <= '1' when STATE = STATE_WB else '0';
 

@@ -1,6 +1,6 @@
 -- MINIFIVE: a simple (subset of) RISC-V processor
 --   decoder.vhdl - instruction decoder
--- Copyright (C) 2019-2023 Naoki FUJIEDA. New BSD License is applied.
+-- Copyright (C) 2019-2026 Naoki FUJIEDA. New BSD License is applied.
 ------------------------------------------------------------------------
 
 -- FORMAT output signal is encoded as follows:
@@ -34,28 +34,28 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 
 entity DECODER is
-  port (INST     : in  std_logic_vector(31 downto 0);
-        FORMAT   : out std_logic_vector( 2 downto 0);
-        BR_COND  : out std_logic_vector( 1 downto 0);
-        REG_WE3  : out std_logic;
-        A_SRC    : out std_logic;
-        B_SRC    : out std_logic;
-        ALU_OP   : out std_logic_vector( 4 downto 0);
-        DMEM_WE  : out std_logic;
-        D3_SRC   : out std_logic_vector( 1 downto 0);
-        UNDEF    : out std_logic);
+  port (INST     : in  std_ulogic_vector(31 downto 0);
+        FORMAT   : out std_ulogic_vector( 2 downto 0);
+        BR_COND  : out std_ulogic_vector( 1 downto 0);
+        REG_WE3  : out std_ulogic;
+        A_SRC    : out std_ulogic;
+        B_SRC    : out std_ulogic;
+        ALU_OP   : out std_ulogic_vector( 4 downto 0);
+        DMEM_WE  : out std_ulogic;
+        D3_SRC   : out std_ulogic_vector( 1 downto 0);
+        UNDEF    : out std_ulogic);
 end DECODER;
 
 architecture RTL of DECODER is
-  signal OPCODE : std_logic_vector(6 downto 0);
-  signal FUNCT3 : std_logic_vector(2 downto 0);
-  signal FUNCT7 : std_logic_vector(6 downto 0);
+  signal OPCODE : std_ulogic_vector(6 downto 0);
+  signal FUNCT3 : std_ulogic_vector(2 downto 0);
+  signal FUNCT7 : std_ulogic_vector(6 downto 0);
 begin
   OPCODE <= INST( 6 downto  0);
   FUNCT3 <= INST(14 downto 12);
   FUNCT7 <= INST(31 downto 25);
 
-  process (INST, OPCODE, FUNCT3, FUNCT7) begin
+  process (all) begin
     FORMAT   <= "000";
     BR_COND  <= "00";
     REG_WE3  <= '0';

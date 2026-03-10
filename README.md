@@ -4,7 +4,7 @@ MINIFIVE: a simple (subset of) RISC-V processor
 Abstract
 --------
 
-This repository contains HDL source codes (written in VHDL) of a simple
+This repository contains HDL source codes (written in VHDL-2008) of a simple
 multi-cycle processor that executes a subset of the RV32I instruction set,
 developed for an educational purpose.
 
@@ -48,23 +48,22 @@ How to Use
 
 NOTE: The test bench has been renewed since the 2022 edition.
 You can now initialize program and data memories using text files.
+Currently, their names have to be specified in the testbench.
 
 The operation of the processor has been confirmed through logic simulation,
 using <a href="http://ghdl.free.fr/">GHDL</a>, a free VHDL simulator.
 
-Source files to be used are all files in the `src` and `src/testbench`
-directories. The name of entity of test bench is `MINIFIVE_TEST`.
+Source files to be used are all files in the `src` folder. The name of
+entity of test bench is `MINIFIVE_TEST`.
 So, analyze these files and run the simulation with the test bench as the
-top module. They can be done by executing GHDL twice on the `testbench`
-directory, with the following arguments:
+top module. They can be done by executing GHDL twice on the source directory,
+with the following arguments:
 
->     GHDL -a -fexplicit -fsynopsys ..\alu.vhdl ..\branch.vhdl ..\decoder.vhdl ..\immextend.vhdl ..\regfile.vhdl ..\minifive.vhdl program.vhdl datamemory.vhdl minifive_test.vhdl
->     GHDL -r -fexplicit -fsynopsys MINIFIVE_TEST --ieee-asserts=disable --stop-time=1ms
+>     ghdl -a --std=08 alu.vhdl branch.vhdl decoder.vhdl immextend.vhdl regfile.vhdl minifive.vhdl memory.vhdl minifive_test.vhdl
+>     ghdl -r --std=08 MINIFIVE_TEST --ieee-asserts=disable --stop-time=1ms
 
 By default, the test bench has been set up to execute the `fibonacci`
-program. The simulation with this program will "fail" at 10,230 ns.
-Since the test bench terminates the simulation with an `assert` statement,
-this is an expected behavior.
+program. The simulation will `finish` at 7,680 ns.
 
 NOTE: This procedure can be easily conducted using my frontend tool,
 <a href="https://github.com/nfproc/GGFront">GGFront</a>.
@@ -101,7 +100,7 @@ If the file terminates before 256 lines, the rest of the words will be
 left uninitialized.
 
 If you are going to execute another program on MINIFIVE, modify the file
-names of `init_file` in `program.vhdl:21` and `datamemory.vhdl:23`.
+names of `IMEM_INIT` and `DMEM_INIT`, in lines 62-63 of `minifive_test.vhdl`.
 
 Since MINIFIVE adopts the Harvard architecture, instruction and data
 memories are logically separated. The capacity of the both memories is
@@ -125,4 +124,4 @@ MINIFIVE is developed by <a href="https://aitech.ac.jp/~dslab/nf/index.en.html">
 It is licensed under the New BSD license.
 See the COPYING file for more information.
 
-Copyright (C) 2019-2023 Naoki FUJIEDA. All rights reserved.
+Copyright (C) 2019-2026 Naoki FUJIEDA. All rights reserved.
