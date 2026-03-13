@@ -118,6 +118,7 @@ begin
     variable li_init, li_log, li_dmem : line;
     variable r_data  : std_ulogic_vector(31 downto 0);
     variable st_dmem : string(1 to 21);
+    variable last_x  : boolean;
     alias swrite is write [line, string, side, width];
     
     alias DEBUG_A3 is <<signal PROC.DEBUG_A3 : std_ulogic_vector( 4 downto 0)>>;
@@ -210,9 +211,14 @@ begin
     writeline(DMEM_DMP, li_log);
 
     -- third loop (after processor stopped)
+    last_x := false;
     while TEST_DMEM_A < x"000007fc" loop
       wait until falling_edge(CLK);
       if not is_x(TEST_DMEM_Q) then
+        if last_x then
+          swrite(li_log, "...");
+          writeline(DMEM_DMP, li_log);
+        end if;
         hwrite(li_log, TEST_DMEM_A, left);
         swrite(li_log, ": ");
         hwrite(li_log, TEST_DMEM_Q, left);
@@ -220,6 +226,7 @@ begin
         write(li_log, to_integer(TEST_DMEM_Q), left);
         writeline(DMEM_DMP, li_log);
       end if;
+      last_x := is_x(TEST_DMEM_Q);
       TEST_DMEM_A <= TEST_DMEM_A + 4;
     end loop;
     
